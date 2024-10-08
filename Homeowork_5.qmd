@@ -1,0 +1,231 @@
+---
+title: "Homework 5"
+author: "Ethan Marburger"
+format: html
+editor: visual
+---
+
+## Homework 5
+
+Calling appropriate packages 
+
+```{r}
+#| echo: false
+library(tidyverse)
+library(readr)
+```
+
+### Task 1: Read in the Data and Modify 
+
+1) Reading in and merging student data files using local paths
+
+```{r}
+d1=read.table("student-mat.csv",sep=";",header=TRUE)
+d2=read.table("student-por.csv",sep=";",header=TRUE)
+
+d3=merge(d1,d2,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
+print(nrow(d3)) # 382 students
+d3
+```
+
+2) read in and combine the data using functions from the tidyverse
+
+```{r}
+# Reading in data
+student_mat <- read_csv2("student-mat.csv")
+student_por <- read_csv2("student-por.csv")
+# Inner join on same variables as Q1
+error_inner_join <- inner_join(student_mat, student_por,
+                               by = c("school", "sex", "age", "address", 
+                               "famsize", "Pstatus", "Medu", "Fedu", "Mjob", 
+                               "Fjob", "reason", "nursery", "internet"))
+print(error_inner_join)
+```
+
+ # issue with inner join = more columns were returned then specified
+ 
+ 3) Use an inner_join() on all variables other than G1, G2, G3, paid, and absences.
+ 
+```{r}
+# Removing undesired columns
+student_mat_remove <- student_mat |>
+  select(-G1, -G2, -G3, -paid, -absences)
+student_por_remove <- student_por |>
+  select(-G1, -G2, -G3, -paid, -absences)
+
+# Inner join
+student_join <- inner_join(student_mat_remove, student_por_remove)
+print(student_join)
+```
+
+4) For the math data, Portuguese, and combined data, choose four categorical variables you are interested in and convert those into factor variables in each tibble. 
+
+Mutated factors = sex, guardian, activities, and internet.
+
+```{r}
+# Converting student_mat_remove categorical variables to factors
+student_mat_remove <- student_mat_remove |>
+ mutate(sex = as.factor(sex),
+        guardian = as.factor(guardian),
+        activities = as.factor(activities),
+        internet = as.factor(internet))
+
+# Converting student_por_remove categorical variables to factors
+student_por_remove <- student_por_remove |>
+ mutate(sex = as.factor(sex),
+        guardian = as.factor(guardian),
+        activities = as.factor(activities),
+        internet = as.factor(internet))
+
+# Converting student_join categorical variables to factors
+student_join <- student_join |>
+ mutate(sex = as.factor(sex),
+        guardian = as.factor(guardian),
+        activities = as.factor(activities),
+        internet = as.factor(internet))
+
+str(student_join)
+```
+
+### Task 2:  Summarize the Data (Very Basic EDA)
+
+#### Categorical Variables
+
+1a) One-way contingency table
+
+```{r}
+table(student_join$sex, useNA = "always")
+```
+Number interpretation: There are 146 males in our student_join tibble
+
+1b) two-way contingency table
+
+```{r}
+table(student_join$sex, student_join$internet, useNA = "always")
+```
+Number interpretation: There are 31 females without access to the internet
+
+1c) three-way contingency table
+
+```{r}
+table(student_join$sex, student_join$guardian, student_join$internet)
+```
+
+Number interpretation: There are 109 females with a mother and internet access
+
+2a) Create a conditional two-way table using table(). Subset the data with filter()
+
+```{r}
+filter_student_join <- student_join |>
+  drop_na(sex, internet) |>
+  group_by(sex, internet) |>
+  filter(sex == "F")
+
+table(filter_student_join$sex, filter_student_join$internet, useNA = "always")
+```
+
+2b) Create a conditional two-way table using table(). Subset a three-way 
+contingency table into a two-way table
+
+```{r}
+three_way_tbl <- table(student_join$sex, student_join$guardian, 
+                       student_join$internet, useNA = "always")
+
+# Subsetting three way table on access to internet
+two_way_tbl_subset <- three_way_tbl[, , "yes"]
+print(two_way_tbl_subset)
+```
+
+3) Create a two-way contingency table using group_by() and summarize() from dplyr. Then use pivot_wider() to make the result look more like the output from table()
+```{r}
+cat_student_join_plot <- student_join |>
+  drop_na(sex, guardian) |>
+  group_by(sex, guardian) |>
+  summarize(count =n())|>
+  pivot_wider(names_from = guardian, values_from = count)
+
+print(cat_student_join_plot)
+```
+
+4) Create a stacked bar graph and a side-by-side bar graph. Give relevant x and y labels, and a title for the plots.
+
+```{r}
+# Stacked bar graph
+g <- ggplot(data = student_join |> drop_na(sex), 
+            aes(x = sex, fill = internet))
+g + geom_bar() + 
+  labs(x = "Sex", title = "Internet Access by Sex") +
+  scale_fill_discrete("Internet") +
+  theme(plot.title = element_text(hjust = 0.5)) #centering title
+```
+
+```{r}
+# Side-by-side bar graph
+g + geom_bar(position = "dodge") + 
+  labs(x = "Sex", title = "Internet Access by Sex") +
+  scale_fill_discrete("Internet") +
+  theme(plot.title = element_text(hjust = 0.5)) #centering title
+```
+
+#### Numerical Variables
+
+Reading in data with numerical variables
+
+```{r}
+student_math <- read_csv2("student-mat.csv")
+student_port <- read_csv2("student-por.csv")
+student_data <- inner_join(student_math, student_port, 
+                           by = c("sex", "guardian", "internet", "age",
+                                  "absences", "G1", "G2", "G3"))
+
+# Keeping numerical variables and a few categorical variables 
+student_data <- student_data |>
+  select(sex, guardian, internet, age, absences, G1, G2, G3)
+
+print(student_data)
+```
+
+1) Find measures of center and spread for three of these variables 
+(including at least one G3 variable)
+
+```{r}
+# Measure of center and spread
+student_data |>
+ select(age, absences, G3) |>
+ drop_na(age, absences, G3) |>
+ summarize(across(c(age, absences, G3), .fns = list("mean" = mean, 
+                                      "median" = median, 
+                                      "var" = var, 
+                                      "sd" = sd, 
+                                      "IQR" = IQR), .names = "{.fn}_{.col}"))
+```
+
+```{r}
+# Repeating above, subsetting in a meaningful way
+student_data |>
+ select(age, absences, G3) |>
+ drop_na(age, absences, G3) |>
+ filter(age > "15", absences < "3", G3 >= "12") |>
+ summarize(across(c(age, absences, G3), .fns = list("mean" = mean, 
+                                      "median" = median, 
+                                      "var" = var, 
+                                      "sd" = sd, 
+                                      "IQR" = IQR), .names = "{.fn}_{.col}"))
+```
+
+2) Find measures of center and spread across a single grouping variable for three of these variables (including a G3 variable as one of them)
+
+```{r}
+student_data |>
+group_by(sex) |> # grouping variable
+ select(age, absences, G3) |>
+ drop_na(age, absences, G3) |>
+ filter(age > "15", absences < "3", G3 >= "12") |>
+ summarize(across(c(age, absences, G3), .fns = list("mean" = mean, 
+                                      "median" = median, 
+                                      "var" = var, 
+                                      "sd" = sd, 
+                                      "IQR" = IQR), .names = "{.fn}_{.col}"))
+```
+```
+
