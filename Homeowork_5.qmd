@@ -227,5 +227,132 @@ group_by(sex) |> # grouping variable
                                       "sd" = sd, 
                                       "IQR" = IQR), .names = "{.fn}_{.col}"))
 ```
+
+3) Find measures of center and spread across a two grouping variable for three of these variables (including a G3 variable as one of them)
+
+```{r}
+student_data |>
+group_by(sex, internet) |> # grouping variables
+ select(age, absences, G3) |>
+ drop_na(age, absences, G3) |>
+ summarize(across(c(age, absences, G3), .fns = list("mean" = mean, 
+                                      "median" = median, 
+                                      "var" = var, 
+                                      "sd" = sd, 
+                                      "IQR" = IQR), .names = "{.fn}_{.col}"))
+```
+
+4) Create a correlation matrix between all of the numeric variables
+
+```{r}
+cor(student_data[4:8])
+```
+
+5) Create a histogram, kernel density plot, and boxplot for two of the numeric variables across one of the categorical variables
+
+```{r}
+# Kernel Density 1: G1 across sex
+KD1 <- ggplot(student_data |> drop_na(G1, sex), aes(x = G1))
+KD1 + geom_density(alpha = 0.4, aes(fill = sex)) +
+  labs(x = "First Period Grade", title = "Kernel Density: First Period Grade by Sex") +
+  scale_fill_discrete("Sex") +
+  theme(plot.title = element_text(hjust = 0.5)) #centering title
+```
+
+```{r}
+# Kernel Density 2: G2 across sex
+KD2 <- ggplot(student_data |> drop_na(G2, sex), aes(x = G2))
+KD2 + geom_density(kernel = "gaussian", alpha = 0.4, aes(fill = sex)) +
+  labs(x = "Second Period Grade", title = "Kernel Density: Second Period Grade by Sex") +
+  scale_fill_discrete("Sex") +
+  theme(plot.title = element_text(hjust = 0.5)) #centering title
+```
+
+```{r}
+# Histogram 1: G1 across sex
+H1 <- ggplot(student_data |> drop_na(G1, sex), aes(x = G1))
+H1 + geom_histogram(binwidth = 0.5, alpha = 1, aes(fill = sex)) +
+  labs(x = "First Period Grade", title = "Histogram: First Period Grade by Sex") +
+  scale_fill_discrete("Sex") +
+  theme(plot.title = element_text(hjust = 0.5)) #centering title
+```
+
+```{r}
+# Histogram 2: G2 across sex
+H2 <- ggplot(student_data |> drop_na(G2, sex), aes(x = G2))
+H2 + geom_histogram(binwidth = 0.75, alpha = 1, aes(fill = sex)) +
+  labs(x = "Second Period Grade", title = "Histogram: Second Period Grade by Sex") +
+  scale_fill_discrete("Sex") +
+  theme(plot.title = element_text(hjust = 0.5)) #centering title
+```
+
+```{r}
+# Box Plot 1: G1 across sex
+bp1 <- ggplot(student_data |> drop_na(G1, sex))
+bp1 + geom_boxplot(aes(x = G1, y = sex, fill = sex)) +
+  labs(x = "First Period Grade", title = "Box Plot: First Period Grade by Sex") +
+  scale_fill_discrete("Sex") +
+  theme(plot.title = element_text(hjust = 0.5)) #centering title
+```
+
+```{r}
+# Box Plot 2: G2 across sex
+bp1 <- ggplot(student_data |> drop_na(G2, sex))
+bp1 + geom_boxplot(aes(x = G2, y = sex, fill = sex)) +
+  labs(x = "Second Period Grade", title = "Box Plot: Second Period Grade by Sex") +
+  scale_fill_discrete("Sex") +
+  theme(plot.title = element_text(hjust = 0.5)) #centering title
+```
+
+6) Create two scatterplots relating a G3 variable to other numeric variables (put G3 on the y-axis).
+
+```{r}
+# Scatter Plot 1: G3 and age across sex
+sp1 <- ggplot(student_data |> drop_na(G3, age), aes(x = age, y = G3, color = sex))
+sp1 + geom_point() +
+  labs(x = "Student Age", y = "Third Period Grades", 
+       title = "Scatter Plot: Third Period Grade by Age") +
+  theme(plot.title = element_text(hjust = 0.5)) #centering title
+```
+
+```{r}
+# Scatter Plot 2: G3 and absences across sex
+sp1 <- ggplot(student_data |> drop_na(G3, absences), aes(x = absences, y = G3, color = sex))
+sp1 + geom_point() +
+  labs(x = "Absences", y = "Third Period Grades", 
+       title = "Scatter Plot: Third Period Grade by Absences") +
+  theme(plot.title = element_text(hjust = 0.5)) #centering title
+```
+
+7) Repeat the scatter plot step but use faceting to obtain graphs at each setting of another categorical variable.
+
+```{r}
+# Scatter Plot with faceting: G3 and absences across internet
+
+# Setting up labels for facet plots
+custom_labels <- c("yes" = "Internet Access: Yes", "no" = "Internet Access: No")
+
+sp1 <- ggplot(student_data |> drop_na(G3, absences), aes(x = absences, y = G3, color = internet))
+sp1 + geom_point() +
+  labs(x = "Absences", y = "Third Period Grades", 
+       title = "Scatter Plot: Third Period Grade by Absences, Sex, and Internet Access") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  facet_wrap(~ internet, labeller = as_labeller(custom_labels)) 
+```
+
+8) Repeat the scatter plot step but use faceting to obtain graphs at each combination of two categorical variables.
+
+```{r}
+# Scatter Plot with faceting: G3 and absences across sex internet
+
+# Setting up labels for facet plots
+custom_labels <- c("yes" = "Internet Access: Yes", "no" = "Internet Access: No")
+
+sp1 <- ggplot(student_data |> drop_na(G3, absences), aes(x = absences, y = G3, color = sex))
+sp1 + geom_point() +
+  labs(x = "Absences", y = "Third Period Grades", 
+       title = "Scatter Plot: Third Period Grade by Absences, Sex, and Internet Access") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  facet_wrap(~ internet, labeller = as_labeller(custom_labels)) 
 ```
 
