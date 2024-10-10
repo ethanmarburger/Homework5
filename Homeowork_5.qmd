@@ -1,19 +1,18 @@
 ---
-title: "Homework 5"
+title: "Homework 5: EDA Practice"
 author: "Ethan Marburger"
 format: html
 editor: visual
 ---
 
-## Homework 5
 
 Calling appropriate packages 
 
 ```{r}
-#| echo: false
 library(tidyverse)
 library(readr)
 ```
+
 
 ### Task 1: Read in the Data and Modify 
 
@@ -25,8 +24,9 @@ d2=read.table("student-por.csv",sep=";",header=TRUE)
 
 d3=merge(d1,d2,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
 print(nrow(d3)) # 382 students
-d3
+head(d3)
 ```
+
 
 2) read in and combine the data using functions from the tidyverse
 
@@ -42,7 +42,8 @@ error_inner_join <- inner_join(student_mat, student_por,
 print(error_inner_join)
 ```
 
- # issue with inner join = more columns were returned then specified
+Issue with inner join = more columns were returned then specified
+ 
  
  3) Use an inner_join() on all variables other than G1, G2, G3, paid, and absences.
  
@@ -57,6 +58,7 @@ student_por_remove <- student_por |>
 student_join <- inner_join(student_mat_remove, student_por_remove)
 print(student_join)
 ```
+
 
 4) For the math data, Portuguese, and combined data, choose four categorical variables you are interested in and convert those into factor variables in each tibble. 
 
@@ -87,6 +89,7 @@ student_join <- student_join |>
 str(student_join)
 ```
 
+
 ### Task 2:  Summarize the Data (Very Basic EDA)
 
 #### Categorical Variables
@@ -96,9 +99,11 @@ str(student_join)
 ```{r}
 table(student_join$sex, useNA = "always")
 ```
+
 What's Interesting?: More female students then male.
 
 Number interpretation: There are 146 males in our student_join tibble
+
 
 1b) two-way contingency table
 
@@ -110,6 +115,7 @@ What's Interesting?: The amount of students without internet access.
 
 Interpretation: There are 31 females without access to the internet.
 
+
 1c) three-way contingency table
 
 ```{r}
@@ -119,6 +125,7 @@ table(student_join$sex, student_join$guardian, student_join$internet)
 What's Interesting?: Within these two schools, students whose guardian status is "other" all have internet access.
 
 Interpretation: There are 109 females with a mother and internet access
+
 
 2a) Create a conditional two-way table using table(). Subset the data with filter()
 
@@ -132,6 +139,7 @@ table(filter_student_join$sex, filter_student_join$internet, useNA = "always")
 ```
 
 What's Interesting?: The amount of female students without internet access.
+
 
 2b) Create a conditional two-way table using table(). Subset a three-way 
 contingency table into a two-way table
@@ -147,6 +155,7 @@ print(two_way_tbl_subset)
 
 What's Interesting?: There are female students with guardian as "father" with internet access than male students.
 
+
 3) Create a two-way contingency table using group_by() and summarize() from dplyr. Then use pivot_wider() to make the result look more like the output from table()
 ```{r}
 cat_student_join_plot <- student_join |>
@@ -159,6 +168,7 @@ print(cat_student_join_plot)
 ```
 
 What's Interesting?: Number of female and male students with "father" as guardian is the same.
+
 
 4) Create a stacked bar graph and a side-by-side bar graph. Give relevant x and y labels, and a title for the plots.
 
@@ -204,6 +214,7 @@ print(student_data)
 
 What's Interesting?: Some students have zero absences.
 
+
 1) Find measures of center and spread for three of these variables 
 (including at least one G3 variable)
 
@@ -236,6 +247,7 @@ student_data |>
 
 What's Interesting?: When subset by the these criteria, the mean number of absences drops to 0.667.
 
+
 2) Find measures of center and spread across a single grouping variable for three of these variables (including a G3 variable as one of them)
 
 ```{r}
@@ -253,6 +265,7 @@ group_by(sex) |> # grouping variable
 
 What's Interesting?: Male students don't meet subset criteria.
 
+
 3) Find measures of center and spread across a two grouping variable for three of these variables (including a G3 variable as one of them)
 
 ```{r}
@@ -269,12 +282,14 @@ group_by(sex, internet) |> # grouping variables
 
 What's Interesting?: The mean absences for males without internet access is zero.
 
+
 4) Create a correlation matrix between all of the numeric variables
 
 ```{r}
 cor(student_data[4:8])
 ```
 What's Interesting?: absences is positively correlated with age.
+
 
 5) Create a histogram, kernel density plot, and boxplot for two of the numeric variables across one of the categorical variables
 
@@ -344,6 +359,7 @@ bp1 + geom_boxplot(aes(x = G2, y = sex, fill = sex)) +
 
 What's Interesting?: In the second period, male score are spread across the board while female scores are concentrated around ten.
 
+
 6) Create two scatterplots relating a G3 variable to other numeric variables (put G3 on the y-axis).
 
 ```{r}
@@ -368,6 +384,7 @@ sp1 + geom_point() +
 
 What's Interesting?: More females then males were absent.
 
+
 7) Repeat the scatter plot step but use faceting to obtain graphs at each setting of another categorical variable.
 
 ```{r}
@@ -385,6 +402,7 @@ sp1 + geom_point() +
 ```
 
 What's Interesting?: In the third period, there are more males then females with internet access.
+
 
 8) Repeat the scatter plot step but use faceting to obtain graphs at each combination of two categorical variables.
 
