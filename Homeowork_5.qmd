@@ -1,6 +1,6 @@
 ---
 title: "Homework 5: EDA Practice"
-author: "Ethan Marburger"
+author: "Ethan Marburger" 
 format: html
 editor: visual
 ---
